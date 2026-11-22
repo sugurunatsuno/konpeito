@@ -38,7 +38,7 @@ export function useMediaQuery(query: string, whenUnavailable = false): boolean {
 }
 
 export function useLayoutMode(): LayoutMode {
-  const wide = useMediaQuery('(min-width: 1200px)', true)
+  const wide = useMediaQuery('(min-width: 1120px)', true)
   const medium = useMediaQuery('(min-width: 768px)', true)
   return layoutFromMatches(wide, medium)
 }

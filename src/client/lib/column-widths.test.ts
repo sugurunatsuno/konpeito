@@ -46,9 +46,9 @@ describe('column widths', () => {
 
   it('falls back when the stored sidebar width is below the minimum or not a number', () => {
     memory.set(SIDEBAR_WIDTH_KEY, '100')
-    expect(readSidebarWidth()).toBe(280)
+    expect(readSidebarWidth()).toBe(264)
     memory.set(SIDEBAR_WIDTH_KEY, 'wide')
-    expect(readSidebarWidth()).toBe(280)
+    expect(readSidebarWidth()).toBe(264)
   })
 
   it('never returns less than the column minimum, however narrow the frame', () => {

@@ -4,7 +4,7 @@ export const SIDEBAR_WIDTH_KEY = 'reader:layout:sidebar-width'
 const LIST_WIDTH_KEY = 'reader:layout:list-width'
 const SIDEBAR_DOCKED_KEY = 'reader:layout:sidebar-docked'
 export const SIDEBAR_MIN = 220
-const SIDEBAR_DEFAULT = 280
+const SIDEBAR_DEFAULT = 264
 export const LIST_MIN = 280
 export const ARTICLE_MIN = 280
 const SPLITTER_TRACKS_PX = 2
@@ -13,7 +13,7 @@ function defaultListWidth(): number {
   if (typeof window === 'undefined') {
     return 360
   }
-  return Math.min(420, Math.max(320, Math.round(window.innerWidth * 0.3)))
+  return Math.min(440, Math.max(340, Math.round(window.innerWidth * 0.28)))
 }
 
 function readStoredWidth(key: string, min: number, fallback: number): number {

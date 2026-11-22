@@ -8,7 +8,7 @@ import {
   LoaderCircle,
   Menu,
 } from 'lucide-react'
-import { type RefObject, useEffect } from 'react'
+import { type RefObject, useEffect, useState } from 'react'
 import type { Filter, SortOrder } from '../../../shared/constants.ts'
 import { feedTitle } from '../../../shared/feed.ts'
 import type { Messages } from '../../i18n/en.ts'
@@ -240,6 +240,30 @@ export function ItemList(props: {
   )
 }
 
+function ItemIcon(props: {
+  leadImageUrl: string | null
+  feedName: string
+  feedIconUrl: string | null
+}) {
+  const [failed, setFailed] = useState(false)
+  const url = props.leadImageUrl
+  if (url === null || url.length === 0 || failed) {
+    return <FeedIcon title={props.feedName} iconUrl={props.feedIconUrl} className="h-5 w-5" />
+  }
+  return (
+    <img
+      src={url}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      width={20}
+      height={20}
+      className="h-5 w-5 shrink-0 rounded-[5px] object-cover"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 function ItemRow(props: {
   item: ItemSummary
   index: number
@@ -314,7 +338,11 @@ function ItemRow(props: {
           )}
           aria-hidden="true"
         />
-        <FeedIcon title={props.feedName} iconUrl={props.feedIconUrl} />
+        <ItemIcon
+          leadImageUrl={item.lead_image_url}
+          feedName={props.feedName}
+          feedIconUrl={props.feedIconUrl}
+        />
         <h3
           id={titleId}
           className={cn(

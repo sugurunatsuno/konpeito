@@ -283,7 +283,7 @@ function ItemRow(props: {
       aria-current={selected ? 'true' : undefined}
       tabIndex={selected ? 0 : -1}
       className={cn(
-        'absolute top-0 left-0 w-full border-l-2 py-2 pr-3 pl-2.5',
+        'absolute top-0 left-0 w-full border-l-2 py-1.5 pr-3 pl-2.5',
         'after:pointer-events-none after:absolute after:right-3 after:bottom-0 after:left-2.5 after:h-px',
         selected
           ? cn(
@@ -306,51 +306,39 @@ function ItemRow(props: {
       <Link {...props.href} className="absolute inset-0 z-0" tabIndex={-1}>
         <span className="sr-only">{title}</span>
       </Link>
-      <div className="pointer-events-none relative flex items-start gap-2">
-        <div className="relative min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-fg-muted">
-            <div className="flex min-w-0 items-center gap-1">
-              <FeedIcon title={props.feedName} iconUrl={props.feedIconUrl} />
-              <span className="truncate">{props.feedName}</span>
-            </div>
-            {item.is_read ? null : (
-              <span className="h-2 w-2 shrink-0 rounded-full bg-accent-mark" aria-hidden="true" />
-            )}
-            {item.has_update ? (
-              <Badge variant="info" size="sm">
-                {t.list.updated}
-              </Badge>
-            ) : null}
-          </div>
-          <h3
-            id={titleId}
-            className={cn(
-              'mt-1 line-clamp-3 text-sm font-medium',
-              item.is_read && !selected && 'text-fg-muted',
-            )}
-          >
-            {title}
-          </h3>
-          {item.summary ? (
-            <p className="mt-1 line-clamp-2 text-xs text-fg-muted">{item.summary}</p>
-          ) : null}
-          <div className="mt-2 flex items-center gap-2 text-xs text-fg-muted">
-            <time dateTime={new Date(item.published_at * 1000).toISOString()}>
-              {formatRelative(item.published_at)}
-            </time>
-          </div>
-        </div>
-        {item.lead_image_url ? (
-          <img
-            src={item.lead_image_url}
-            alt=""
-            className="relative h-14 w-[88px] shrink-0 rounded object-cover"
-          />
+      <div className="pointer-events-none relative flex min-w-0 items-center gap-2">
+        <span
+          className={cn(
+            'h-2 w-2 shrink-0 rounded-full',
+            item.is_read ? 'bg-transparent' : 'bg-accent-mark',
+          )}
+          aria-hidden="true"
+        />
+        <FeedIcon title={props.feedName} iconUrl={props.feedIconUrl} />
+        <h3
+          id={titleId}
+          className={cn(
+            'min-w-0 flex-1 truncate text-sm',
+            item.is_read && !selected ? 'text-fg-muted' : 'font-medium',
+          )}
+        >
+          {title}
+        </h3>
+        {item.has_update ? (
+          <Badge variant="info" size="sm">
+            {t.list.updated}
+          </Badge>
         ) : null}
+        {item.is_bookmarked ? (
+          <Bookmark className="h-3.5 w-3.5 shrink-0 fill-current text-accent-text" aria-hidden="true" />
+        ) : null}
+        <time
+          className="shrink-0 text-xs text-fg-muted tabular-nums"
+          dateTime={new Date(item.published_at * 1000).toISOString()}
+        >
+          {formatRelative(item.published_at)}
+        </time>
       </div>
-      {item.is_bookmarked ? (
-        <Bookmark className="absolute top-2 right-3 h-4 w-4 fill-current" aria-hidden="true" />
-      ) : null}
     </article>
   )
   return (

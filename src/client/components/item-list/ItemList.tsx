@@ -8,7 +8,7 @@ import {
   LoaderCircle,
   Menu,
 } from 'lucide-react'
-import { type RefObject, useEffect, useState } from 'react'
+import { type RefObject, useEffect, useRef, useState } from 'react'
 import type { Filter, SortOrder } from '../../../shared/constants.ts'
 import { feedTitle } from '../../../shared/feed.ts'
 import type { Messages } from '../../i18n/en.ts'
@@ -30,7 +30,9 @@ import { AppContextMenu, ContextMenuTrigger } from '../ui/context-menu.tsx'
 import { IconButton, IconLink } from '../ui/icon-button.tsx'
 import { SourceMenu, type SourceMenuHandlers } from './SourceMenu.tsx'
 
-const ROW_ESTIMATE = 110
+// 1行表示の行の高さ（py-1.5 + 20pxアイコン）。見積もりが実測から大きく外れると
+// スクロール位置の計算がずれるため、実際の高さに合わせる
+const ROW_ESTIMATE = 32
 const PREFETCH_THRESHOLD = 5
 
 function emptyMessage(source: Source, filter: Filter, t: Messages): string {
@@ -112,14 +114,24 @@ export function ItemList(props: {
     }
   }, [endIndex, fetchThreshold, hasNextPage, isFetchingNextPage, fetchNextPage])
 
+  // 選択中の記事が変わったときだけ、その行が見える位置までスクロールする。
+  // items の更新（次ページの読み込みなど）で勝手に位置が戻らないよう、最後に合わせた選択を覚えておく
+  const alignedRef = useRef<string | undefined>(undefined)
   useEffect(() => {
-    if (props.selectedRef === undefined) {
+    const selectedRef = props.selectedRef
+    if (selectedRef === undefined) {
+      alignedRef.current = undefined
       return
     }
-    const index = items.findIndex((item) => itemMatches(item, props.selectedRef))
-    if (index >= 0) {
-      virtualizer.scrollToIndex(index, { align: 'auto' })
+    if (alignedRef.current === selectedRef) {
+      return
     }
+    const index = items.findIndex((item) => itemMatches(item, selectedRef))
+    if (index < 0) {
+      return
+    }
+    alignedRef.current = selectedRef
+    virtualizer.scrollToIndex(index, { align: 'auto' })
   }, [items, props.selectedRef, virtualizer])
 
   const setSize = hasNextPage ? -1 : items.length
@@ -187,7 +199,10 @@ export function ItemList(props: {
           aria-busy={isFetchingNextPage}
           className={cn(
             'relative w-full',
-            items.length === 0 ? 'flex min-h-0 flex-1 items-center justify-center' : 'min-h-16',
+            // スクロール領域の高さを仮想スクロールの総高に合わせるため、flex で縮められないようにする
+            items.length === 0
+              ? 'flex min-h-0 flex-1 items-center justify-center'
+              : 'min-h-16 shrink-0',
           )}
           style={items.length === 0 ? undefined : { height: `${virtualizer.getTotalSize()}px` }}
         >
@@ -358,7 +373,10 @@ function ItemRow(props: {
           </Badge>
         ) : null}
         {item.is_bookmarked ? (
-          <Bookmark className="h-3.5 w-3.5 shrink-0 fill-current text-accent-text" aria-hidden="true" />
+          <Bookmark
+            className="h-3.5 w-3.5 shrink-0 fill-current text-accent-text"
+            aria-hidden="true"
+          />
         ) : null}
         <time
           className="shrink-0 text-xs text-fg-muted tabular-nums"

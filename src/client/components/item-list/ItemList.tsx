@@ -99,7 +99,7 @@ export function ItemList(props: {
     count: items.length,
     getScrollElement: () => props.scrollRef.current,
     estimateSize: () => ROW_ESTIMATE,
-    overscan: 8,
+    overscan: 4,
     getItemKey: (index) => {
       const item = items[index]
       return item ? itemRefOf(item) : index
@@ -223,7 +223,6 @@ export function ItemList(props: {
                 feedName={feed ? feedTitle(feed) : ''}
                 feedIconUrl={feed?.icon_url ?? null}
                 href={itemLink(source, itemRefOf(item), props.search)}
-                measure={virtualizer.measureElement}
                 onFocus={() => {
                   if (row.index >= fetchThreshold && hasNextPage && !isFetchingNextPage) {
                     fetchNextPage()
@@ -288,7 +287,6 @@ function ItemRow(props: {
   feedName: string
   feedIconUrl: string | null
   href: ReturnType<typeof itemLink>
-  measure: (node: HTMLElement | null) => void
   onFocus: () => void
   onOpen: () => void
   onToggleRead: () => void
@@ -315,14 +313,13 @@ function ItemRow(props: {
     <article
       data-index={props.index}
       data-item-id={ref}
-      ref={props.measure}
       aria-labelledby={titleId}
       aria-posinset={props.index + 1}
       aria-setsize={props.setSize}
       aria-current={selected ? 'true' : undefined}
       tabIndex={selected ? 0 : -1}
       className={cn(
-        'absolute top-0 left-0 w-full border-l-2 py-1.5 pr-3 pl-2.5',
+        'absolute top-0 left-0 flex h-8 w-full items-center border-l-2 pr-3 pl-2.5',
         'after:pointer-events-none after:absolute after:right-3 after:bottom-0 after:left-2.5 after:h-px',
         selected
           ? cn(
@@ -345,7 +342,7 @@ function ItemRow(props: {
       <Link {...props.href} className="absolute inset-0 z-0" tabIndex={-1}>
         <span className="sr-only">{title}</span>
       </Link>
-      <div className="pointer-events-none relative flex min-w-0 items-center gap-2">
+      <div className="pointer-events-none relative flex min-w-0 flex-1 items-center gap-2">
         <span
           className={cn(
             'h-2 w-2 shrink-0 rounded-full',

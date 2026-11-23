@@ -66,6 +66,8 @@ export const ja: Messages = {
     gone: '削除済み',
     unreadCount: (count: number) => `未読${count}件`,
     unreadCountShort: (count: number) => `${count}件`,
+    expandTag: 'フィードを表示',
+    collapseTag: 'フィードを隠す',
   },
   list: {
     newestFirst: '新しい順',

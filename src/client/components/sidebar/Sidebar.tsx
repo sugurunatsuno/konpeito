@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { AlertTriangle, LoaderCircle, Plus, Search, Settings } from 'lucide-react'
+import { AlertTriangle, ChevronRight, LoaderCircle, Plus, Search, Settings } from 'lucide-react'
 import { type ReactNode, useRef, useState } from 'react'
 import { feedTitle } from '../../../shared/feed.ts'
 import { useMessages } from '../../i18n/I18nProvider.tsx'
@@ -27,6 +27,7 @@ import {
 import type { ReaderSearch, Source } from '../../lib/search-params.ts'
 import { DEFAULT_SETTINGS_TAB } from '../../lib/settings-tabs.ts'
 import { feedSource, sameSource, tagSource } from '../../lib/sources.ts'
+import { readLocal, writeLocal } from '../../lib/storage.ts'
 import { cn } from '../../lib/utils.ts'
 import { FeedIcon } from '../FeedIcon.tsx'
 import { FeedContextItems } from '../item-list/SourceMenu.tsx'
@@ -40,6 +41,21 @@ import { AppTooltip } from '../ui/tooltip.tsx'
 
 const rowClassName =
   'flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md px-2 text-left text-sm hover:bg-state-hover'
+
+const COLLAPSED_TAGS_KEY = 'reader:sidebar:collapsed-tags'
+
+function readCollapsedTags(): number[] {
+  const raw = readLocal(COLLAPSED_TAGS_KEY)
+  if (raw === null) {
+    return []
+  }
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed.filter((id): id is number => typeof id === 'number') : []
+  } catch {
+    return []
+  }
+}
 
 function SearchField(props: {
   initialQuery: string
@@ -135,6 +151,18 @@ export function Sidebar(props: {
   const feedRefresh = useFeedRefresh()
   const { scrolled, onScroll } = useScrolled()
   const searchButtonRef = useRef<HTMLButtonElement>(null)
+  const [collapsedTags, setCollapsedTags] = useState<number[]>(readCollapsedTags)
+
+  /** タグごとのフィード表示を折りたたむ。状態はブラウザに保存する */
+  function toggleTag(tagId: number) {
+    setCollapsedTags((current) => {
+      const next = current.includes(tagId)
+        ? current.filter((id) => id !== tagId)
+        : [...current, tagId]
+      writeLocal(COLLAPSED_TAGS_KEY, JSON.stringify(next))
+      return next
+    })
+  }
   const feedIds = props.feeds.map((feed) => feed.id)
   const tagIds = props.tags.map((tag) => tag.id)
 
@@ -340,18 +368,38 @@ export function Sidebar(props: {
               >
                 {!props.readOnly && tagDrag.dropTarget === tag.id ? <DropIndicator /> : null}
                 <div
-                  className="relative"
+                  className="relative flex items-center gap-0.5"
                   {...(props.readOnly ? {} : feedDrag.sectionProps(tag.id))}
                 >
                   {!props.readOnly && feedDrag.isOver({ tagId: tag.id, beforeFeedId: null }) ? (
                     <DropIndicator edge="bottom" />
                   ) : null}
+                  <button
+                    type="button"
+                    aria-expanded={!collapsedTags.includes(tag.id)}
+                    aria-controls={`tag-feeds-${tag.id}`}
+                    aria-label={
+                      collapsedTags.includes(tag.id) ? t.sidebar.expandTag : t.sidebar.collapseTag
+                    }
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-fg-muted hover:bg-state-hover"
+                    onClick={() => toggleTag(tag.id)}
+                  >
+                    <ChevronRight
+                      aria-hidden="true"
+                      className={cn(
+                        'h-3.5 w-3.5 transition-transform',
+                        !collapsedTags.includes(tag.id) && 'rotate-90',
+                      )}
+                    />
+                  </button>
                   {sourceRow(
                     tagSource(tag),
                     <span className="min-w-0 flex-1 truncate">{tag.name}</span>,
                   )}
                 </div>
-                <ul>{members.map((feed) => feedRow(feed, tag.id))}</ul>
+                <ul id={`tag-feeds-${tag.id}`} hidden={collapsedTags.includes(tag.id)}>
+                  {members.map((feed) => feedRow(feed, tag.id))}
+                </ul>
               </li>
             )
           })}

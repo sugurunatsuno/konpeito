@@ -68,6 +68,8 @@ export const en = {
     gone: 'Removed',
     unreadCount: (count: number) => `${count} unread`,
     unreadCountShort: (count: number) => `${count}`,
+    expandTag: 'Show feeds',
+    collapseTag: 'Hide feeds',
   },
   list: {
     newestFirst: 'Newest first',

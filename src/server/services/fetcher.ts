@@ -10,7 +10,7 @@ const ACCEPT =
   'application/atom+xml, application/rss+xml, application/feed+json, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.1'
 const MAX_BYTES = 5 * 1024 * 1024
 const MAX_REDIRECTS = 5
-const TIMEOUT_MS = 15_000
+const TIMEOUT_MS = 30_000
 const ALLOWED_PORTS = new Set(['', '80', '443', '8080', '8443'])
 
 interface FetchInput {
